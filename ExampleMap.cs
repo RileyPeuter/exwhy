@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class arenaMap : gridScript
+public class Example : gridScript
 {
 
     // Start is called before the first frame update
