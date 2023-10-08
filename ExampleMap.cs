@@ -6,7 +6,7 @@ public class Example : gridScript
 {
 
     // Start is called before the first frame update
-    public arenaMap()
+    public Example()
     {
 
         spriteSheet = new Sprite[2, 16];
