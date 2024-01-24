@@ -1,8 +1,25 @@
-﻿using System.Collections;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class gridScript{
+public abstract class ExWhy
+{
+    public ExWhy(int xMx, int yMx, string resName)
+    {
+        xMax = xMx;
+        yMax = yMx;
+
+        resourceName = resName;
+
+        gridCells = new ExWhyCell[yMax, yMax];
+        spriteSheet = new Sprite[16, 16];
+
+        loadPrefabs();
+        loadSpriteMap();
+    }
+
+
 
     //To know the dimensions of the grid
     public int xMax;
@@ -13,8 +30,6 @@ public abstract class gridScript{
     public GameObject[] iconPrefabs;
 
 
-    public globalGameController ggc;
-
     //This variable holds the basic cell or "tile" data for a world. It's stored it chars, so to make it easy to create and edit maps with little to know coding knowledge
     public char[,] worldData;
     //This variable holds events. Each event, such as non random battle, shops or story events have a number. 0 is used to denote no event. 
@@ -22,12 +37,12 @@ public abstract class gridScript{
     public int[,] eventMask;
 
     //The this holds references to the grid cells one they are created.
-    public gridCell[,] gridCells;
+    public ExWhyCell[,] gridCells;
 
     //These variables are used to find and load sprites.
     public Sprite[,] spriteSheet;
     public string resourceName;
-    
+
 
     //Function to load the sprites of the grid from Unity's "resource" folder into memory
     //Each tile type should have 16 sprites
@@ -36,140 +51,87 @@ public abstract class gridScript{
         int y = 0;
         foreach (GameObject tp in tilePrefabs)
         {
-            for(int x = 0; x < 16; x++)
+            for (int x = 0; x < 16; x++)
             {
-                GameObject.Find("globalGameController").GetComponent<globalGameController>().notPrint("OverworldTiles/sprites/" + resourceName + "/" + tp.name + (x + 1));
+                //GameObject.Find("globalGameController").GetComponent<globalGameController>().notPrint("OverworldTiles/sprites/" + resourceName + "/" + tp.name + (x + 1));
                 //OverworldTiles / sprites / arena / floorSprites1.png
-                spriteSheet[y, x] = Resources.Load<Sprite>("OverworldTiles/sprites/"+ resourceName + "/" + tp.name + (x + 1));//+ (x + 1));
-                                                          //OverworldTiles/sprites/arena/floorSpritesfloorSprites.png
+                spriteSheet[y, x] = Resources.Load<Sprite>("MapTiles/Sprites/" + resourceName + "/" + tp.name + (x + 1));//+ (x + 1));                                                                                                             //OverworldTiles/sprites/arena/floorSpritesfloorSprites.png
             }
-            y = y + 1; 
+            y = y + 1;
         }
     }
 
-    //Experimental constructor
-    /*
-    public gridScript() //int width, int height, char[,] WD, int[,] eventMask Args
+    public void loadPrefabs()
     {
-        gridCells = new gridCell[width,height];
-        xMax = width;
-        yMax = height;
-        for(int i = 0; i < xMax; i++)
-        {
-            for(int z = 0; z <yMax; z++)
-            {
-                gridCells[i, z] = new gridCell(i, z, WD[i,z]);
-                gridCells[i, z].eventIndex = eventMask[i, z];
-                GameObject.Find("OverworldTiles5").GetComponent<playerOverworldScript>().negroid();
-                GameObject.Instantiate();
-                
-            }
-        }
+
+        tilePrefabs = Resources.LoadAll<GameObject>("MapTiles/Prefabs/" + resourceName);
+
     }
-	*/
 
-    //Place Holder. This should be overriden in the implementation
-    public virtual void instantiateCells()
-    {
-        //This instatiates and gives basic properties to each cell, such as whether or not it's able to be walked on
-        foreach (gridCell cell in gridCells)
-        {
-            switch (cell.cellType)
-            {
-
-                case 'a':
-                    cell.cellGO = GameObject.Instantiate(tilePrefabs[1], new Vector3(cell.xPosition, cell.yPosition, 1) * 2, new Quaternion());
-                    cell.spriteID = 1;
-                    break;
-
-                case 'g':
-                    cell.cellGO = GameObject.Instantiate(tilePrefabs[0], new Vector3(cell.xPosition, cell.yPosition, 1) * 2, new Quaternion());
-                    cell.spriteID = 0;
-                    break;
-
-                case 'c':
-                    cell.cellGO = GameObject.Instantiate(tilePrefabs[1], new Vector3(cell.xPosition, cell.yPosition, 1) * 2, new Quaternion());
-                    cell.spriteID = 0;
-                    break;
-
-
-                case 'b':
-                    cell.cellGO = GameObject.Instantiate(tilePrefabs[0], new Vector3(cell.xPosition, cell.yPosition, 1) * 2, new Quaternion());
-                    cell.walkable = false;
-                    cell.spriteID = 0;
-                    break;
-                    cell.cellGO.GetComponent<SpriteRenderer>().sprite = spriteSheet[cell.spriteID, cell.colID];
-
-            }
-            cell.cellGO.GetComponent<SpriteRenderer>().sprite = spriteSheet[cell.spriteID, cell.colID];
-        }
-    }
 
 
 
     //Place Holder. This should be overriden in the implementation
-    public virtual void instantiateEvents()
+    public virtual void initiateCells()
     {
-        //This instatiates and gives basic properties to each cell, such as whether or not it's able to be walked on
-        foreach (gridCell cell in gridCells)
+        for (int x = 0; x < xMax; x = x + 1)
         {
-            //This adds events to cells. Battles, cutscenes or shops. 
-            switch (cell.eventIndex)
+            for (int y = 0; y < yMax; y = y + 1)
             {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                    cell.cellGO = GameObject.Instantiate(iconPrefabs[0], new Vector3(cell.xPosition, cell.yPosition, 1) * 2, new Quaternion());
-                    break;
-                case 9:
-                    break;
-                case 10:
-                    cell.cellGO = GameObject.Instantiate(iconPrefabs[1], new Vector3(cell.xPosition, cell.yPosition, 1) * 2, new Quaternion());
-                    break;
+                gridCells[y, x] = new ExWhyCell(y, x, worldData[y, x], eventMask[y, x]);
             }
         }
-
-        //Sets the cell sprite to the correct cell sprite
     }
+
+
+    protected void instantiateCell(ExWhyCell cell, bool walkable, int prefabIndex, int spriteID)
+    {
+
+        cell.cellGO = GameObject.Instantiate(tilePrefabs[prefabIndex], new Vector3(cell.xPosition, cell.yPosition, 1) * 4, new Quaternion());
+        cell.walkable = walkable;
+        cell.spriteID = spriteID;
+
+    }
+
+    public abstract void instantiateCells();
+    public abstract void instantiateEvents();
+
 
 
     //This is the script to instantiate the grid in the game world
     //It reads each cell in a grid, then "draws" it in the game world
     public void drawGrid()
     {
+        instantiateCells();
+        //        instantiateEvents();
         //This section gets the consolidation ID. In other words, checks the cell type around each cell, and gives it a different sprite depending. 
         //For instance, if you have a water cell next to a grass cell, it shows a shore line on the water sprite. 
-        foreach (gridCell cell in gridCells)
+        foreach (ExWhyCell cell in gridCells)
         {
             cell.colID = getConsolidationID(this, cell.xPosition, cell.yPosition);
+            consolidate(cell);
         }
 
-        instantiateCells();
-        instantiateEvents();
 
 
-        }
 
-   
+    }
+
+
 
     //This function is used to trigger an event. 
     public abstract void eventTest(int eventIndex);
 
-    public void consolidate(gridCell gc)
+    public void consolidate(ExWhyCell cell)
     {
-        gc.cellGO.GetComponent<SpriteRenderer>().sprite = spriteSheet[gc.spriteID, gc.colID];
+        cell.cellGO.GetComponent<SpriteRenderer>().sprite = spriteSheet[cell.spriteID, cell.colID];
     }
 
 
     //This bit of code may look complicated, but it's simple. It gets a cell in a grid, then checks the surrounding cells to see whether they're the same type. 
     // If you want some grass next to some water, then it'll show a shoreline, instead of the two sprites next to each other. 
     //0 = middle, 1-4 = North South Left Right, 5-8 = NW, SW, SE, NE, 9-12 = INW, ISW, ISE, INE, 13-14 = NS, WE 15 = Pillar
-    public static int getConsolidationID(gridScript gs, int x, int y)
+    public static int getConsolidationID(ExWhy gs, int x, int y)
     {
         char tileChar = gs.worldData[x, y];
         //Likes
@@ -181,21 +143,23 @@ public abstract class gridScript{
         if (x == 0)
         {
             left = true;
-        } else{
+        }
+        else
+        {
             left = (gs.worldData[x - 1, y] == tileChar);
         }
 
-        if(y == 0)
+        if (y == 0)
         {
             down = true;
         }
         else
         {
-            down = (gs.worldData[x, y-1] == tileChar);
+            down = (gs.worldData[x, y - 1] == tileChar);
         }
 
 
-        if (x == gs.xMax)
+        if (x + 1 == gs.xMax)
         {
             right = true;
         }
@@ -204,7 +168,7 @@ public abstract class gridScript{
             right = (gs.worldData[x + 1, y] == tileChar);
         }
 
-        if (y == gs.yMax)
+        if (y + 1 == gs.yMax)
         {
             up = true;
         }
@@ -215,7 +179,7 @@ public abstract class gridScript{
 
         //Up Down Left Right
         //Centre
-        if(up && down && left && right)
+        if (up && down && left && right)
         {
             return 0;
         }
@@ -310,5 +274,11 @@ public abstract class gridScript{
         return 0;
     }
 
-}
+    //Now, fam, this isn't necessarily the best way. We could use a hypotenuse, but for now, we doing this. 
+    public static int getDistanceBetweenCells(ExWhyCell cell1, ExWhyCell cell2){
+        return (Math.Abs(cell1.xPosition - cell2.xPosition) + Math.Abs(cell1.yPosition - cell2.yPosition)); 
 
+
+        }
+
+}
